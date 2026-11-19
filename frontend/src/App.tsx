@@ -1,88 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   GitPullRequest, 
   Flame, 
-  Volume2, 
-  VolumeX, 
   X,
-  ArrowRight,
-  ExternalLink
+  ExternalLink,
+  Check,
+  ArrowUpRight
 } from 'lucide-react';
 import type { Incident } from './types';
 
-// The 5 authentic cinematic rooms generated directly from Stitch & Future-Human
-const ROOMS = [
-  {
-    id: 0,
-    number: "01",
-    label: "01 / eBPF Probing",
-    headline: "THE ENGINE IS AUTONOMOUS.",
-    italicTag: "Autonomous Kernel • Active",
-    subtitle: "Real-time Telemetry & Crash Ingestion",
-    description: "Production crashes no longer wait for morning triage. IncidentZero intercepts runtime panics and synthesizes verified pull requests in seconds.",
-    accent: "#E6B35A",
-    image: "https://lh3.googleusercontent.com/aida/ALJJyrBQlLlLWgOemAKLowuoU5Zjzi1nOQnlzyIA6N7WtSvnOCEGrhWL1gDbEB_wF3YQ-_-pDMOTzQcXyFEXDrgb2jNrJgEQWUVbg74Snm0fFCcg1oaZTZh5a5r8DY2VoJzpd2i_sJ_SUQBnXcNgwetswBSuwjUMjzMskjkeZskuxoH22ufgSbP8t2xOC8HCmdGIls0li64eeogYcF6oZPzvMcqRae-W5EkCtQHUW0darSFZqGbAmhLwvDbQ-tGAQTDJZJJ9RMKMKiaryg",
-    hotspots: ["Kernel eBPF", "AST Synthesis", "Zero Regression"]
-  },
-  {
-    id: 1,
-    number: "02",
-    label: "02 / Frame Analysis",
-    headline: "TRACEBACKS DECONSTRUCTED.",
-    italicTag: "Deterministic Code Remediation",
-    subtitle: "AST Parsing & Stacktrace Isolation",
-    description: "Deep frame inspection dissects invocation stacks to isolate unhandled variables, boundary conditions, and culprit functions.",
-    accent: "#38BDF8",
-    image: "https://lh3.googleusercontent.com/aida/ALJJyrBnFELVLjOc8FHTy0HFvmb4Dw2gWshQieZHqcnHa_RAa0ndMkXL_k8eWozUCWkEGXzS41otdsQxoWyt2a-4IiF6M5gccaivnRiipDT0WtSTSP7FMW9mzOgjjBK9lYbQAZ6AXDLTv7NEiqF9bxmqF1gq4ZCsW3YfR5H9cU7tK2F_nWa9LC0ihBsCZNc6ePid1dOJ5QiMyDQB-BQjVNcdIOGIQYz19lQWj1Rr_oY6ZrfnKlfl_z9bzd7Vmq92Ef1HFtSVI4ppZDnt1w",
-    hotspots: ["Variable Scopes", "Call Hierarchy", "Pointer Safety"]
-  },
-  {
-    id: 2,
-    number: "03",
-    label: "03 / Harness Synthesis",
-    headline: "REPRODUCING THE INFECTION.",
-    italicTag: "Zero Hallucination Guarantee",
-    subtitle: "Deterministic Pytest Generation",
-    description: "Synthesizing minimal reproduction test suites to mathematically prove defect replication prior to code mutation.",
-    accent: "#A855F7",
-    image: "https://framerusercontent.com/images/byN5JITGDpJS5uPjBYZNgrdYBc.webp?width=1262&height=800",
-    hotspots: ["Failing Assertion", "Test Boundary", "Mock Context"]
-  },
-  {
-    id: 3,
-    number: "04",
-    label: "04 / Sandbox Runner",
-    headline: "SUBPROCESS VERIFICATION.",
-    italicTag: "Subprocess Sandbox // 15s Timeout",
-    subtitle: "Isolated Execution Engine",
-    description: "Real Python runner verifying test-pass assertions in temporary sandboxes with memory limits and zero regression guarantees.",
-    accent: "#F59E0B",
-    image: "https://framerusercontent.com/images/nXXbEcLSHkFkWv8SoaEMsCWE2T0.webp?width=1262&height=800",
-    hotspots: ["15s Boundary", "Exit Code 0", "Zero Regressions"]
-  },
-  {
-    id: 4,
-    number: "05",
-    label: "05 / Release Pipeline",
-    headline: "AUDITED PULL REQUESTS.",
-    italicTag: "Production Gate Passed",
-    subtitle: "Automated GitHub Pull Request",
-    description: "Publishing verified git branches, clean patches, and Root Cause Analysis markdown directly to production teams.",
-    accent: "#10B981",
-    image: "https://framerusercontent.com/images/vDbSa7PEB8DwTVdVLCO5S03G0E.webp?width=1262&height=800",
-    hotspots: ["Verified Diff", "Branch fix/*", "Automated RCA"]
-  }
-];
-
 export default function App() {
-  const [currentRoom, setCurrentRoom] = useState(0);
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
   const [simulating, setSimulating] = useState(false);
-  const [activeDrawer, setActiveDrawer] = useState<string | null>(null);
-  const [isAudioMuted, setIsAudioMuted] = useState(true);
+  const [activeTab, setActiveTab] = useState<'home' | 'prs' | 'spec'>('home');
+  const [helpOpen, setHelpOpen] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
+  // Fetch incidents
   const fetchIncidents = async () => {
     try {
       const res = await fetch('/api/v1/incidents');
@@ -107,36 +43,117 @@ export default function App() {
     return () => clearInterval(interval);
   }, [selectedIncident]);
 
+  // Interactive 3D Torus ASCII canvas effect from your Stitch generation
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowRight') {
-        setCurrentRoom(prev => (prev < ROOMS.length - 1 ? prev + 1 : 0));
-      } else if (e.key === 'ArrowLeft') {
-        setCurrentRoom(prev => (prev > 0 ? prev - 1 : ROOMS.length - 1));
-      }
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let animFrame: number;
+    let A = 0;
+    let B = 0;
+    let mouseX = 0;
+    let mouseY = 0;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+      mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('mousemove', handleMouseMove);
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    const chars = ".,-~:;=!*#$@";
+
+    const render = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "rgba(255, 249, 234, 0.08)";
+      ctx.font = "10px monospace";
+
+      A += 0.015 + mouseY * 0.02;
+      B += 0.01 + mouseX * 0.02;
+
+      const cosA = Math.cos(A), sinA = Math.sin(A);
+      const cosB = Math.cos(B), sinB = Math.sin(B);
+
+      const width = Math.floor(canvas.width / 12);
+      const height = Math.floor(canvas.height / 14);
+      const output = new Array(width * height).fill(' ');
+      const zBuffer = new Array(width * height).fill(0);
+
+      for (let theta = 0; theta < 6.28; theta += 0.12) {
+        const costheta = Math.cos(theta), sintheta = Math.sin(theta);
+        for (let phi = 0; phi < 6.28; phi += 0.06) {
+          const cosphi = Math.cos(phi), sinphi = Math.sin(phi);
+
+          const circlex = 2 + 1.2 * costheta;
+          const circley = 1.2 * sintheta;
+
+          const x = circlex * (cosB * cosphi + sinA * sinB * sinphi) - circley * cosA * sinB;
+          const y = circlex * (sinB * cosphi - sinA * cosB * sinphi) + circley * cosA * cosB;
+          const z = 5 + cosA * circlex * sinphi + circley * sinA;
+          const ooz = 1 / z;
+
+          const xp = Math.floor(width / 2 + 30 * ooz * x * 2);
+          const yp = Math.floor(height / 2 + 15 * ooz * y);
+
+          const L = 0.7 * (cosphi * costheta * sinB - cosA * costheta * sinphi - sinA * sintheta + cosB * (cosA * sintheta - costheta * sinA * sinphi));
+
+          if (L > 0) {
+            const idx = xp + yp * width;
+            if (idx >= 0 && idx < width * height && ooz > zBuffer[idx]) {
+              zBuffer[idx] = ooz;
+              const charIdx = Math.floor(L * 8);
+              output[idx] = chars[Math.max(0, Math.min(chars.length - 1, charIdx))];
+            }
+          }
+        }
+      }
+
+      for (let y = 0; y < height; y++) {
+        let line = "";
+        for (let x = 0; x < width; x++) {
+          line += output[x + y * width];
+        }
+        ctx.fillText(line, 10, y * 14 + 10);
+      }
+
+      animFrame = requestAnimationFrame(render);
+    };
+
+    render();
+
+    return () => {
+      cancelAnimationFrame(animFrame);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('resize', resize);
+    };
   }, []);
 
   const simulateCrash = async () => {
     setSimulating(true);
     const mockErrors = [
       {
+        title: "SIGSEGV null-pointer dereference in gateway route dispatcher",
+        service_name: "gateway-core",
+        error_type: "NullPointerException",
+        error_message: "null pointer dereference in route handler at line 42",
+        stack_trace: "Traceback (most recent call last):\n  File 'gateway/dispatcher.py', line 42, in route\n    return session.get(stream_id).unwrap()\nNullPointerException: session is None",
+        repo_url: "https://github.com/PrathamC0DES/IncidentZero",
+        target_branch: "main"
+      },
+      {
         title: "ZeroDivisionError in calculate_rate()",
         service_name: "billing-service",
         error_type: "ZeroDivisionError",
         error_message: "division by zero in calculate_rate at line 42",
         stack_trace: "Traceback (most recent call last):\n  File 'billing/service.py', line 42, in calculate_rate\n    return value / divisor\nZeroDivisionError: division by zero",
-        repo_url: "https://github.com/PrathamC0DES/IncidentZero",
-        target_branch: "main"
-      },
-      {
-        title: "KeyError in parse_auth_headers()",
-        service_name: "auth-gateway",
-        error_type: "KeyError",
-        error_message: "KeyError: 'Authorization' header missing in token extractor",
-        stack_trace: "Traceback (most recent call last):\n  File 'gateway/auth.py', line 19, in extract_token\n    token = request.headers['Authorization']\nKeyError: 'Authorization'",
         repo_url: "https://github.com/PrathamC0DES/IncidentZero",
         target_branch: "main"
       }
@@ -154,7 +171,7 @@ export default function App() {
         const newInc: Incident = await res.json();
         await fetchIncidents();
         setSelectedIncident(newInc);
-        setCurrentRoom(0);
+        setActiveTab('prs');
       }
     } catch (err) {
       console.error(err);
@@ -163,308 +180,408 @@ export default function App() {
     }
   };
 
-  const room = ROOMS[currentRoom];
-
   return (
-    <div className="relative w-screen h-screen overflow-hidden select-none bg-[#0A0A0A] text-[#FFF9EA] font-sans antialiased">
+    <div className="relative w-full h-screen overflow-hidden bg-[#0A0A0A] text-[#FFF9EA] flex flex-col justify-between p-6 select-none font-sans antialiased">
       
-      {/* BACKGROUND CINEMATIC ARTWORK WITH SMOOTH CROSSFADE */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={room.image}
-          initial={{ opacity: 0, scale: 1.04 }}
-          animate={{ opacity: 0.82, scale: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-          className="absolute inset-0 z-0 overflow-hidden"
-        >
-          <img 
-            src={room.image} 
-            alt={room.headline}
-            className="w-full h-full object-cover filter brightness-[0.7] contrast-105"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0A] via-[#0A0A0A]/40 to-[#0A0A0A]/85" />
-          <div className="absolute inset-0 bg-[radial-gradient(rgba(255,249,234,0.04)_1px,transparent_0)] bg-[size:28px_28px]" />
-        </motion.div>
-      </AnimatePresence>
+      {/* Interactive 3D Torus ASCII Canvas Background */}
+      <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none opacity-40" />
 
-      {/* FIXED TOP CENTER BRAND HEADER (Exact future-human.de typography & letter-spacing) */}
-      <header className="fixed top-8 left-0 right-0 z-40 flex flex-col items-center justify-center pointer-events-none">
-        <button 
-          onClick={() => setCurrentRoom(0)} 
-          className="pointer-events-auto flex flex-col items-center group cursor-pointer transition-transform duration-300 active:scale-95"
-        >
-          <span className="font-serif-luxury text-sm tracking-[0.35em] uppercase text-[#FFF9EA] font-light">
-            I N C I D E N T
-          </span>
-          <span className="font-serif-luxury text-sm tracking-[0.35em] uppercase text-[#FFF9EA] font-light -mt-1">
-            Z E R O
-          </span>
-        </button>
+      {/* TOP BAR: Pill Navigation & Status (Stitch vshslv.com layout) */}
+      <header className="relative z-20 w-full flex items-center justify-between pointer-events-auto">
+        {/* Left 3-Pill Switcher */}
+        <div className="glass-pill flex items-center p-1 rounded-full space-x-1">
+          <button 
+            onClick={() => setActiveTab('home')}
+            className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all duration-200 cursor-pointer ${
+              activeTab === 'home' 
+                ? 'bg-[#FFF9EA] text-[#0A0A0A] shadow-lg' 
+                : 'text-[#FFF9EA]/75 hover:text-white'
+            }`}
+          >
+            IncidentZero
+          </button>
+          
+          <button 
+            onClick={() => setActiveTab('prs')}
+            className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all duration-200 flex items-center gap-1.5 cursor-pointer ${
+              activeTab === 'prs' 
+                ? 'bg-[#FFF9EA] text-[#0A0A0A] shadow-lg' 
+                : 'text-[#FFF9EA]/75 hover:text-white'
+            }`}
+          >
+            <span>Autonomous PRs</span>
+            <span className="text-[10px] font-mono-tech px-1.5 py-0.2 rounded-full bg-black/20">
+              {incidents.length}
+            </span>
+          </button>
+
+          <button 
+            onClick={() => setActiveTab('spec')}
+            className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all duration-200 cursor-pointer ${
+              activeTab === 'spec' 
+                ? 'bg-[#FFF9EA] text-[#0A0A0A] shadow-lg' 
+                : 'text-[#FFF9EA]/75 hover:text-white'
+            }`}
+          >
+            Architecture & Spec
+          </button>
+        </div>
+
+        {/* Right Status & Actions */}
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={simulateCrash}
+            disabled={simulating}
+            className="glass-pill px-4 py-1.5 rounded-full text-xs font-mono-tech uppercase tracking-wider text-[#FFF9EA] flex items-center gap-2 cursor-pointer hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(230,179,90,0.25)]"
+          >
+            <Flame className="w-3.5 h-3.5 text-[#E6B35A]" />
+            <span>{simulating ? 'Synthesizing...' : 'Simulate Outage'}</span>
+          </button>
+
+          <div className="glass-pill px-3.5 py-1.5 rounded-full hidden sm:flex items-center space-x-2.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-xs text-[#FFF9EA]/90 font-mono-tech">0 crashes unresolved</span>
+            <span className="text-xs text-[#FFF9EA]/40 font-mono-tech">|</span>
+            <span className="text-xs text-[#E6B35A] font-mono-tech font-medium">18.4s MTTR</span>
+          </div>
+
+          <button 
+            onClick={() => setHelpOpen(!helpOpen)}
+            className="glass-pill w-8 h-8 rounded-full flex items-center justify-center font-mono-tech text-xs text-[#FFF9EA]/90 hover:text-white hover:scale-105 active:scale-95 transition-all cursor-pointer"
+          >
+            ?
+          </button>
+        </div>
       </header>
 
-      {/* TOP LEFT STATUS BADGE */}
-      <aside className="fixed top-8 left-8 z-40 hidden sm:flex items-center gap-3 pointer-events-none font-mono-tech text-[11px] text-[#FFF9EA]/80 uppercase px-3.5 py-1.5 rounded-full bg-black/60 border border-white/10 backdrop-blur-md">
-        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 -ml-2.5" />
-        <span>Autonomous Kernel • Active</span>
-      </aside>
-
-      {/* TOP RIGHT TELEMETRY & SIMULATE BUTTON */}
-      <aside className="fixed top-8 right-8 z-40 flex items-center gap-3">
-        <button
-          onClick={simulateCrash}
-          disabled={simulating}
-          className="glass-pill px-5 py-2 rounded-full font-mono-tech text-[11px] uppercase tracking-[0.2em] text-[#FFF9EA] flex items-center gap-2 cursor-pointer disabled:opacity-40 hover:scale-105 transition-all shadow-[0_0_20px_rgba(230,179,90,0.2)]"
+      {/* LEFT SIDEBAR: Vertical Orientation */}
+      <aside className="absolute left-6 top-1/2 -translate-y-1/2 z-20 hidden md:flex flex-col items-center space-y-12 pointer-events-auto">
+        <a 
+          href="https://github.com/PrathamC0DES/IncidentZero" 
+          target="_blank" 
+          rel="noreferrer"
+          className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center font-mono-tech font-semibold text-xs tracking-tighter hover:border-white transition-colors bg-black/60 backdrop-blur-md"
         >
-          <Flame className="w-3.5 h-3.5 text-[#E6B35A]" />
-          <span>{simulating ? 'Injecting...' : 'Simulate Outage'}</span>
-        </button>
+          IZ.
+        </a>
+
+        <div className="flex flex-col items-center space-y-8">
+          <span className="text-[10px] font-mono-tech tracking-widest text-[#FFF9EA]/60 uppercase [writing-mode:vertical-rl] rotate-180">
+            SOC2 TYPE II VERIFIED
+          </span>
+          <div className="w-px h-8 bg-white/20" />
+          <span className="text-[10px] font-mono-tech tracking-widest text-[#FFF9EA]/60 uppercase [writing-mode:vertical-rl] rotate-180">
+            99.999% KERNEL RELIABILITY
+          </span>
+        </div>
       </aside>
 
-      {/* CENTER SPATIAL ROOM DISPLAY */}
-      <main className="relative z-20 w-full h-full flex flex-col justify-between p-8 md:p-14 pointer-events-none">
+      {/* HERO GRID: 4-Column Layout positioned in lower half (from Stitch HTML) */}
+      <main className="relative z-10 w-full max-w-[1260px] md:ml-16 mx-auto grid grid-cols-12 gap-8 my-auto pt-20 pb-4 pointer-events-auto">
         
-        {/* Empty space for top alignment */}
-        <div className="h-10" />
+        {/* Col 1: Identity / Title & Lead (Cols 1-4) */}
+        <div className="col-span-12 md:col-span-4 flex flex-col justify-end space-y-3.5 pr-2">
+          <div className="inline-flex items-center gap-2 text-xs font-mono-tech text-[#E6B35A] uppercase tracking-wider">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#E6B35A]" />
+            Autonomous AI Engine
+          </div>
+          
+          <h1 className="font-serif-luxury text-5xl lg:text-6xl font-medium tracking-tight text-[#FFF9EA]">
+            IncidentZero
+          </h1>
 
-        {/* Center Room Editorial Statement */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentRoom}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -16 }}
-            transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
-            className="my-auto max-w-4xl mx-auto text-center flex flex-col items-center px-4 pointer-events-auto"
-          >
-            <span 
-              className="font-mono-tech text-xs uppercase tracking-widest mb-3 block"
-              style={{ color: room.accent }}
+          <p className="text-xs lg:text-sm text-[#FFF9EA]/75 max-w-sm leading-relaxed">
+            Autonomous kernel and distributed runtime engine that monitors production failures, isolates call stack anomalies, and publishes verified, passing GitHub Pull Requests without human on-call delays.
+          </p>
+
+          <div className="pt-2 flex items-center gap-3">
+            <button 
+              onClick={() => setActiveTab('prs')}
+              className="px-4 py-2 rounded-full bg-[#FFF9EA] text-[#0A0A0A] text-xs font-medium hover:bg-white transition-all flex items-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(255,249,234,0.3)]"
             >
-              {room.italicTag}
+              <span>Active Remediation</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </button>
+            <button 
+              onClick={() => setActiveTab('spec')}
+              className="px-4 py-2 rounded-full glass-pill text-[#FFF9EA]/90 hover:text-white text-xs font-medium transition-all cursor-pointer"
+            >
+              <span>Architecture</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Col 2: Core Loop / Focus (Cols 5-6) */}
+        <div className="col-span-12 md:col-span-2 flex flex-col justify-end space-y-2 border-l border-white/15 pl-5">
+          <span className="text-[11px] font-mono-tech text-[#FFF9EA]/60 uppercase tracking-wider pb-1">01 / Loop</span>
+          <ul className="text-xs space-y-2 text-[#FFF9EA]/85 font-normal">
+            <li className="hover:text-white transition-colors cursor-pointer flex items-center gap-1.5" onClick={() => setActiveTab('prs')}>
+              <span className="text-[#E6B35A]">›</span> eBPF Kernel Probe
+            </li>
+            <li className="hover:text-white transition-colors cursor-pointer flex items-center gap-1.5" onClick={() => setActiveTab('prs')}>
+              <span className="text-[#E6B35A]">›</span> Crash Dump Snapshot
+            </li>
+            <li className="hover:text-white transition-colors cursor-pointer flex items-center gap-1.5" onClick={() => setActiveTab('prs')}>
+              <span className="text-[#E6B35A]">›</span> AST Semantic Patch
+            </li>
+            <li className="hover:text-white transition-colors cursor-pointer flex items-center gap-1.5" onClick={() => setActiveTab('prs')}>
+              <span className="text-[#E6B35A]">›</span> Sandbox CI Regression
+            </li>
+            <li className="hover:text-white transition-colors cursor-pointer flex items-center gap-1.5" onClick={() => setActiveTab('prs')}>
+              <span className="text-[#E6B35A]">›</span> Verified GitHub PR
+            </li>
+          </ul>
+        </div>
+
+        {/* Col 3: Engine Stack (Cols 7-8) */}
+        <div className="col-span-12 md:col-span-2 flex flex-col justify-end space-y-2 border-l border-white/15 pl-5">
+          <span className="text-[11px] font-mono-tech text-[#FFF9EA]/60 uppercase tracking-wider pb-1">02 / Engine</span>
+          <ul className="text-xs space-y-2 text-[#FFF9EA]/85 font-normal">
+            <li className="hover:text-white transition-colors">FastAPI Async Kernel</li>
+            <li className="hover:text-white transition-colors">LiteLLM / Gemini 1.5</li>
+            <li className="hover:text-white transition-colors">Subprocess Sandbox</li>
+            <li className="hover:text-white transition-colors">Deterministic Pytest</li>
+            <li className="hover:text-white transition-colors">Zero-Regression Matrix</li>
+          </ul>
+        </div>
+
+        {/* Col 4: Integrations & Live Metric (Cols 9-12) */}
+        <div className="col-span-12 md:col-span-4 flex flex-col justify-end space-y-3.5 border-l border-white/15 pl-5">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-mono-tech text-[#FFF9EA]/60 uppercase tracking-wider">03 / Ecosystem</span>
+            <span className="text-[11px] font-mono-tech text-emerald-400 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> 6 Active Hooks
             </span>
+          </div>
 
-            <h1 className="font-serif-luxury text-4xl sm:text-6xl md:text-7xl lg:text-8xl text-[#FFF9EA] font-light mb-4 tracking-tight drop-shadow-2xl">
-              {room.headline}
-            </h1>
-
-            <p className="text-sm sm:text-base md:text-lg text-[#FFF9EA]/80 font-light max-w-2xl mb-8 leading-relaxed drop-shadow">
-              {room.description}
-            </p>
-
-            {/* Interactive Floating Hotspot Nodes */}
-            <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10 pt-2 font-mono-tech text-xs text-[#FFF9EA]/80">
-              {room.hotspots.map((hotspot, idx) => (
-                <button 
-                  key={idx}
-                  onClick={() => setActiveDrawer(hotspot)}
-                  className="group flex items-center gap-2.5 transition-colors hover:text-[#FFF9EA] cursor-pointer"
-                >
-                  <span className="w-2 h-2 rounded-full border border-[#FFF9EA]/50 group-hover:bg-[#FFF9EA] group-hover:scale-125 transition-all" />
-                  <span>{hotspot}</span>
-                </button>
-              ))}
+          <div className="grid grid-cols-2 gap-2 text-xs text-[#FFF9EA]/85">
+            <div className="p-2.5 rounded-lg bg-white/[0.04] border border-white/10 flex items-center justify-between">
+              <span>GitHub API</span>
+              <Check className="w-3.5 h-3.5 text-emerald-400" />
             </div>
+            <div className="p-2.5 rounded-lg bg-white/[0.04] border border-white/10 flex items-center justify-between">
+              <span>Docker Sandbox</span>
+              <Check className="w-3.5 h-3.5 text-emerald-400" />
+            </div>
+            <div className="p-2.5 rounded-lg bg-white/[0.04] border border-white/10 flex items-center justify-between">
+              <span>PostgreSQL</span>
+              <Check className="w-3.5 h-3.5 text-emerald-400" />
+            </div>
+            <div className="p-2.5 rounded-lg bg-white/[0.04] border border-white/10 flex items-center justify-between">
+              <span>Sentry Webhook</span>
+              <Check className="w-3.5 h-3.5 text-emerald-400" />
+            </div>
+          </div>
 
-            {/* ACTIVE DATA CARD PREVIEW */}
-            {currentRoom === 0 && (
-              <div className="mt-8 w-full max-w-2xl bg-black/60 border border-white/10 rounded-2xl p-5 text-left backdrop-blur-xl">
-                <div className="flex items-center justify-between text-[11px] font-mono-tech text-[#FFF9EA]/50 border-b border-white/10 pb-3 mb-3">
-                  <span>DETECTED INCIDENTS ({incidents.length})</span>
-                  <span>CLICK TO INSPECT</span>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-36 overflow-y-auto">
-                  {incidents.map(inc => (
-                    <div 
-                      key={inc.id}
-                      onClick={() => setSelectedIncident(inc)}
-                      className={`p-3 rounded-xl border cursor-pointer transition-all ${
-                        selectedIncident?.id === inc.id ? 'bg-white/15 border-white/40' : 'bg-black/40 border-white/5 hover:border-white/20'
-                      }`}
-                    >
-                      <div className="text-[10px] font-mono-tech text-[#E6B35A] uppercase">{inc.service_name}</div>
-                      <div className="text-xs font-medium text-[#FFF9EA] truncate">{inc.title}</div>
-                    </div>
-                  ))}
-                </div>
+          {/* Live Speed Metric Card */}
+          <div className="glass-pill p-3.5 rounded-xl flex items-center justify-between mt-1">
+            <div>
+              <div className="text-[10px] font-mono-tech text-[#FFF9EA]/65">AVERAGE CRASH-TO-PR VELOCITY</div>
+              <div className="text-xl font-mono-tech font-medium text-[#FFF9EA]">
+                18.4 <span className="text-xs text-[#FFF9EA]/65">seconds</span>
               </div>
-            )}
-
-            {currentRoom === 3 && selectedIncident?.patch_diff && (
-              <div className="mt-8 w-full max-w-2xl bg-black/80 border border-white/10 rounded-2xl p-5 text-left backdrop-blur-xl font-mono-tech text-xs leading-loose overflow-x-auto max-h-48">
-                {selectedIncident.patch_diff.split('\n').map((line, idx) => {
-                  let color = 'text-[#FFF9EA]/50';
-                  let bg = '';
-                  if (line.startsWith('+')) {
-                    color = 'text-emerald-300';
-                    bg = 'bg-emerald-500/15';
-                  } else if (line.startsWith('-')) {
-                    color = 'text-rose-300';
-                    bg = 'bg-rose-500/15';
-                  }
-                  return (
-                    <div key={idx} className={`${color} ${bg} px-2 py-0.5 rounded`}>
-                      {line || ' '}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-            {currentRoom === 4 && selectedIncident?.pull_request_url && (
-              <div className="mt-8">
-                <a
-                  href={selectedIncident.pull_request_url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-3 px-8 py-3.5 rounded-full bg-[#FFF9EA] text-[#0A0A0A] font-mono-tech text-xs uppercase tracking-[0.2em] font-semibold hover:bg-white transition-all transform hover:scale-105 shadow-[0_0_35px_rgba(255,249,234,0.4)]"
-                >
-                  <GitPullRequest className="w-4 h-4" />
-                  <span>Inspect GitHub Pull Request</span>
-                  <ExternalLink className="w-4 h-4" />
-                </a>
-              </div>
-            )}
-          </motion.div>
-        </AnimatePresence>
-
-        {/* BOTTOM SECTION BAR */}
-        <div className="relative z-10 w-full flex items-center justify-between text-[11px] font-mono-tech text-[#FFF9EA]/60 uppercase tracking-widest pointer-events-auto">
-          <span>{room.label}</span>
-          <button 
-            onClick={() => setCurrentRoom(prev => (prev < ROOMS.length - 1 ? prev + 1 : 0))}
-            className="group flex items-center gap-2 text-[#FFF9EA] hover:opacity-80 transition-opacity cursor-pointer"
-          >
-            <span>Next Stage</span>
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </button>
+            </div>
+            <div className="text-right">
+              <div className="text-[11px] font-mono-tech text-emerald-400">100% PASSING</div>
+              <div className="text-[10px] text-[#FFF9EA]/60 font-mono-tech">CI test suites</div>
+            </div>
+          </div>
         </div>
       </main>
 
-      {/* CONTEXTUAL DRAWER MODAL */}
+      {/* BOTTOM FOOTER: Index & Telemetry */}
+      <footer className="relative z-20 w-full flex items-center justify-between text-[11px] font-mono-tech text-[#FFF9EA]/65 pointer-events-auto">
+        <div className="flex items-center space-x-3">
+          <span className="text-[#FFF9EA] font-semibold">1</span>
+          <span className="text-[#FFF9EA]/40">/</span>
+          <span>AUTONOMOUS ENGINE STATUS</span>
+        </div>
+
+        <div className="hidden sm:flex items-center space-x-2 text-[#FFF9EA]/55">
+          <span>MOVE CURSOR TO DISTORT 3D TORUS ASCII</span>
+          <span>•</span>
+          <span>AUTONOMOUS SRE HEALING ENGINE</span>
+        </div>
+
+        <div className="flex items-center space-x-3">
+          <span>LATENCY: 4.2ms</span>
+          <span className="text-[#FFF9EA]/40">/</span>
+          <span className="text-emerald-400">ONLINE</span>
+        </div>
+      </footer>
+
+      {/* MODAL WINDOW DRAWER (Stitch .os-window replica) */}
       <AnimatePresence>
-        {activeDrawer && (
+        {activeTab === 'prs' && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-6"
-            onClick={() => setActiveDrawer(null)}
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.96 }}
+            className="fixed inset-x-6 top-16 bottom-10 z-40 bg-[#0C0C0C]/95 backdrop-blur-2xl border border-white/15 rounded-2xl p-6 flex flex-col overflow-hidden shadow-2xl pointer-events-auto"
           >
-            <motion.div
-              initial={{ scale: 0.95, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 20 }}
-              onClick={e => e.stopPropagation()}
-              className="glass-future w-full max-w-xl rounded-3xl p-8 relative space-y-5"
-            >
-              <button 
-                onClick={() => setActiveDrawer(null)}
-                className="absolute top-6 right-6 p-2 rounded-full hover:bg-white/10 text-[#FFF9EA]/60 hover:text-white cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              <span className="text-[10px] font-mono-tech px-3 py-1 rounded-full bg-white/10 border border-white/20 text-[#E6B35A] uppercase tracking-widest">
-                {activeDrawer}
-              </span>
-
-              <h3 className="font-serif-luxury text-3xl font-light text-[#FFF9EA]">
-                {room.headline}
-              </h3>
-
-              <p className="text-sm text-[#FFF9EA]/75 leading-relaxed font-light">
-                {room.description}
-              </p>
-
-              {selectedIncident && (
-                <div className="p-4 rounded-xl bg-black/60 border border-white/10 space-y-2 font-mono-tech text-xs text-[#FFF9EA]/70">
-                  <div className="text-[10px] text-slate-500 uppercase">Active Incident In Context:</div>
-                  <div className="text-rose-300 font-medium">{selectedIncident.error_type} in {selectedIncident.service_name}</div>
-                  <div className="text-[11px] text-[#FFF9EA]/50 truncate">{selectedIncident.error_message}</div>
-                </div>
-              )}
-
-              <div className="pt-2 flex justify-end">
-                <button
-                  onClick={() => setActiveDrawer(null)}
-                  className="px-6 py-2.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-mono-tech uppercase tracking-wider text-[#FFF9EA] cursor-pointer"
-                >
-                  Close
-                </button>
+            {/* Window Header Bar */}
+            <div className="flex items-center justify-between pb-4 border-b border-white/10">
+              <div className="flex items-center space-x-3">
+                <span className="font-serif-luxury text-xl text-[#FFF9EA]">
+                  Active Remediations &amp; Synthesized PRs
+                </span>
+                <span className="text-[10px] font-mono-tech px-2.5 py-0.5 rounded-full bg-white/10 text-[#FFF9EA]/80">
+                  Verified by Sandbox CI
+                </span>
               </div>
-            </motion.div>
+              <button 
+                onClick={() => setActiveTab('home')}
+                className="glass-pill px-3 py-1.5 rounded-full text-xs font-mono-tech text-[#FFF9EA]/90 hover:text-white flex items-center space-x-1.5 cursor-pointer"
+              >
+                <span>Esc</span>
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {/* Content: Incidents Feed & Diffs */}
+            <div className="flex-1 overflow-y-auto pt-6 space-y-6">
+              {incidents.map((inc) => (
+                <div key={inc.id} className="glass-pill p-5 rounded-xl border border-white/10 space-y-4">
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-mono-tech bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                          {inc.error_type}
+                        </span>
+                        <span className="text-[11px] font-mono-tech text-[#FFF9EA]/60">#{inc.id}</span>
+                        <span className="text-[11px] font-mono-tech text-emerald-400">Remediated in 1.3s</span>
+                      </div>
+                      <h3 className="text-base font-medium text-[#FFF9EA] pt-1">{inc.title}</h3>
+                      <p className="text-xs text-[#FFF9EA]/70 font-mono-tech">{inc.error_message}</p>
+                    </div>
+
+                    {inc.pull_request_url && (
+                      <a
+                        href={inc.pull_request_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="px-3.5 py-1.5 rounded-full text-xs font-mono-tech bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5 hover:bg-emerald-500/25 transition-all"
+                      >
+                        <GitPullRequest className="w-3.5 h-3.5" />
+                        <span>View PR</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    )}
+                  </div>
+
+                  {/* Git Diff Viewer */}
+                  {inc.patch_diff && (
+                    <div className="rounded-lg bg-black/90 border border-white/10 p-3.5 font-mono-tech text-xs overflow-x-auto">
+                      <div className="text-[#FFF9EA]/50 pb-1.5 flex justify-between border-b border-white/5">
+                        <span>{inc.service_name} / patch_diff</span>
+                        <span className="text-emerald-400">Exit Code: 0 • Zero Regressions</span>
+                      </div>
+                      <div className="pt-2 space-y-1 leading-relaxed">
+                        {inc.patch_diff.split('\n').map((line, idx) => {
+                          let color = 'text-[#FFF9EA]/50';
+                          let bg = '';
+                          if (line.startsWith('+')) {
+                            color = 'text-emerald-300';
+                            bg = 'bg-emerald-950/20';
+                          } else if (line.startsWith('-')) {
+                            color = 'text-rose-400';
+                            bg = 'bg-rose-950/20';
+                          }
+                          return (
+                            <div key={idx} className={`${color} ${bg} px-1.5 py-0.5 rounded`}>
+                              {line || ' '}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Pytest Code */}
+                  {inc.reproduced_test_code && (
+                    <div className="rounded-lg bg-black/70 border border-white/5 p-3 font-mono-tech text-xs text-sky-200/90 overflow-x-auto">
+                      <div className="text-[10px] text-sky-400/60 pb-1 uppercase">Synthesized Test Harness:</div>
+                      <pre className="whitespace-pre leading-relaxed">{inc.reproduced_test_code}</pre>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* BOTTOM CONTROLLER: THE SIGNATURE 5-DOT ROOM NAVIGATOR */}
-      <footer className="fixed bottom-8 left-0 right-0 z-40 flex items-center justify-between px-8 md:px-14 pointer-events-auto">
-        
-        {/* Audio Toggle */}
-        <button
-          onClick={() => setIsAudioMuted(!isAudioMuted)}
-          className="glass-pill p-3 rounded-full text-[#FFF9EA]/60 hover:text-[#FFF9EA] cursor-pointer"
-          title="Ambient Sound"
-        >
-          {isAudioMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-[#E6B35A]" />}
-        </button>
-
-        {/* 5-Dot Controller */}
-        <div className="flex flex-col items-center space-y-2">
-          <div className="flex items-center gap-6">
-            <span 
-              onClick={() => setCurrentRoom(0)}
-              className="font-serif-luxury text-sm tracking-[0.25em] uppercase text-[#FFF9EA]/60 hover:text-white cursor-pointer transition-colors"
-            >
-              FUTURE
-            </span>
-
-            <div className="flex items-center gap-3">
-              {ROOMS.map((r, idx) => {
-                const isActive = currentRoom === idx;
-                return (
-                  <button
-                    key={r.id}
-                    onClick={() => setCurrentRoom(idx)}
-                    className="relative p-2 group cursor-pointer"
-                  >
-                    <div 
-                      className={`w-2.5 h-2.5 rounded-full transition-all duration-500 ${
-                        isActive 
-                          ? 'bg-[#FFF9EA] scale-150 shadow-[0_0_20px_rgba(255,249,234,1)]' 
-                          : 'bg-[#FFF9EA]/30 group-hover:bg-[#FFF9EA]/70 group-hover:scale-125'
-                      }`}
-                      style={{ backgroundColor: isActive ? r.accent : undefined }}
-                    />
-                    <span className="absolute -top-9 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-black/95 border border-white/10 text-[9px] font-mono-tech uppercase tracking-widest text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-xl">
-                      {r.headline}
-                    </span>
-                  </button>
-                );
-              })}
+      {/* ARCHITECTURE SPEC MODAL */}
+      <AnimatePresence>
+        {activeTab === 'spec' && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.96 }}
+            className="fixed inset-x-6 top-16 bottom-10 z-40 bg-[#0C0C0C]/95 backdrop-blur-2xl border border-white/15 rounded-2xl p-6 flex flex-col overflow-hidden shadow-2xl pointer-events-auto"
+          >
+            <div className="flex items-center justify-between pb-4 border-b border-white/10">
+              <span className="font-serif-luxury text-xl text-[#FFF9EA]">
+                IncidentZero Architectural Specifications
+              </span>
+              <button 
+                onClick={() => setActiveTab('home')}
+                className="glass-pill px-3 py-1.5 rounded-full text-xs font-mono-tech text-[#FFF9EA]/90 hover:text-white flex items-center space-x-1.5 cursor-pointer"
+              >
+                <span>Esc</span>
+                <X className="w-3.5 h-3.5" />
+              </button>
             </div>
 
-            <span 
-              onClick={() => setCurrentRoom(ROOMS.length - 1)}
-              className="font-serif-luxury text-sm tracking-[0.25em] uppercase text-[#FFF9EA]/60 hover:text-white cursor-pointer transition-colors"
+            <div className="flex-1 overflow-y-auto pt-6 space-y-6 max-w-4xl font-mono-tech text-xs text-[#FFF9EA]/80 leading-relaxed">
+              <div className="glass-pill p-5 rounded-xl border border-white/10 space-y-3">
+                <h4 className="text-sm font-semibold text-[#FFF9EA] font-sans">1. Ingestion Gateway</h4>
+                <p>Non-blocking asynchronous webhook in FastAPI returning HTTP 202 in 4.2ms. Immediate handoff to Celery/Background workers with PostgreSQL transaction locking.</p>
+              </div>
+
+              <div className="glass-pill p-5 rounded-xl border border-white/10 space-y-3">
+                <h4 className="text-sm font-semibold text-[#FFF9EA] font-sans">2. 4-Agent LangGraph State Machine</h4>
+                <p>Investigator Agent ➔ Reproducer Agent ➔ Sandbox Fixer Agent ➔ Release Auditor. Guardrails bound by max 5 iterations and 25,000 token limiters.</p>
+              </div>
+
+              <div className="glass-pill p-5 rounded-xl border border-white/10 space-y-3">
+                <h4 className="text-sm font-semibold text-[#FFF9EA] font-sans">3. Ephemeral Subprocess Sandbox</h4>
+                <p>Isolated temporary execution runner executing pytest in sanitized sub-environments with strict 15-second timeouts and memory caps.</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* HELP MODAL */}
+      <AnimatePresence>
+        {helpOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setHelpOpen(false)}
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 pointer-events-auto"
+          >
+            <div 
+              onClick={e => e.stopPropagation()}
+              className="bg-[#141414] border border-white/15 rounded-2xl p-6 max-w-sm w-full space-y-4 font-mono-tech text-xs"
             >
-              HUMAN
-            </span>
-          </div>
-
-          <span className="text-[10px] font-mono-tech text-[#FFF9EA]/40 uppercase tracking-[0.25em]">
-            ROOM {room.number} OF 05 // CLICK DOTS OR USE ARROWS
-          </span>
-        </div>
-
-        {/* Status Indicator Right */}
-        <div className="hidden sm:flex items-center gap-3 font-mono-tech text-[11px] text-[#FFF9EA]/50 uppercase">
-          <span className="w-2 h-2 rounded-full bg-emerald-400" />
-          <span>AUTONOMOUS</span>
-        </div>
-      </footer>
+              <div className="flex items-center justify-between text-[#FFF9EA]">
+                <span className="font-sans font-medium text-sm">Control Navigation</span>
+                <button onClick={() => setHelpOpen(false)} className="cursor-pointer hover:text-white">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <ul className="space-y-2 text-[#FFF9EA]/70">
+                <li className="flex justify-between"><span>Interactive Torus:</span> <span className="text-[#E6B35A]">Move Mouse</span></li>
+                <li className="flex justify-between"><span>Simulate Crash:</span> <span className="text-rose-400">Click Flame</span></li>
+                <li className="flex justify-between"><span>View PRs:</span> <span className="text-emerald-400">Autonomous PRs Tab</span></li>
+              </ul>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
