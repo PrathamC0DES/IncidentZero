@@ -1,73 +1,75 @@
 @import "tailwindcss";
 
 @layer base {
-  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=JetBrains+Mono:wght@300;400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
 
   :root {
-    --font-editorial: 'Cinzel', serif;
+    --font-serif: 'Instrument Serif', Georgia, serif;
+    --font-sans: 'Inter', -apple-system, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
-    --font-sans: 'Plus Jakarta Sans', sans-serif;
+    --color-parchment: #FFF9EA;
+    --color-obsidian: #08090A;
   }
 
   body {
-    background-color: #050608;
-    color: #e2e8f0;
+    background-color: var(--color-obsidian);
+    color: var(--color-parchment);
     font-family: var(--font-sans);
-    overflow-x: hidden;
-    letter-spacing: -0.01em;
+    overflow: hidden;
+    user-select: none;
+    -webkit-font-smoothing: antialiased;
   }
 }
 
-/* Future-Human Editorial Luxury Elements */
-.font-editorial {
-  font-family: var(--font-editorial);
+.font-serif-luxury {
+  font-family: var(--font-serif);
 }
 
 .font-mono-tech {
   font-family: var(--font-mono);
 }
 
-/* Film grain overlay */
-.bg-noise {
-  background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 0);
-  background-size: 24px 24px;
+/* Authentic future-human frosted glass card */
+.glass-future {
+  background: rgba(20, 22, 20, 0.65);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 249, 234, 0.12);
+  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.6), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
 }
 
-/* Subtle glowing horizon */
-.glow-horizon {
-  background: radial-gradient(circle at 50% 0%, rgba(225, 29, 72, 0.08) 0%, rgba(5, 6, 8, 0) 70%);
+.glass-pill {
+  background: rgba(255, 249, 234, 0.08);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 249, 234, 0.16);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Ultra-thin hairline border */
-.border-hairline {
-  border-color: rgba(255, 255, 255, 0.06);
+.glass-pill:hover {
+  background: rgba(255, 249, 234, 0.14);
+  border-color: rgba(255, 249, 234, 0.3);
+  transform: translateY(-1px);
 }
 
-.border-hairline-glow {
-  border-color: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 0 30px -10px rgba(225, 29, 72, 0.15);
+/* Pulsing Hotspot Node */
+.hotspot-ring {
+  box-shadow: 0 0 0 0 rgba(255, 249, 234, 0.4);
+  animation: pulse-ring 2.5s infinite cubic-bezier(0.4, 0, 0.6, 1);
 }
 
-/* Glassmorphic luxury panel */
-.glass-panel {
-  background: rgba(10, 12, 16, 0.7);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 249, 234, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 14px rgba(255, 249, 234, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 249, 234, 0);
+  }
 }
 
-/* Smooth custom scrollbars */
+/* Custom smooth scrollbar */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 9999px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  display: none;
 }
