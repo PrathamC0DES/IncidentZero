@@ -1,0 +1,812 @@
+<!DOCTYPE html><html lang="en" class="dark"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IncidentZero — Autonomous AI Platform</title>
+  
+  <!-- Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script data-stitch-original-src="0318034b64b26d7a===../../tailwind.config.js">/** @type {import('tailwindcss').Config} */
+globalThis.tailwind = globalThis.tailwind || {};
+globalThis.tailwind.config = {
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        'accent': '#FF5500',
+        'success': '#22C55E',
+        'warning': '#EAB308',
+        'error': '#EF4444',
+        'border-subtle': 'rgba(255, 255, 255, 0.12)',
+        'surface-card': '#0C0C0C',
+        'surface-card-elevated': '#161616',
+        'text-muted': 'rgba(242, 242, 239, 0.55)',
+        'light-primary': '#0C0C0C',
+        'light-on-primary': '#FFFFFF',
+        'light-surface': '#FAFAF9',
+        'light-on-surface': '#1C1917',
+        'dark-primary': '#F2F2EF',
+        'dark-on-primary': '#000000',
+        'dark-surface': '#000000',
+        'dark-on-surface': '#F2F2EF',
+      },
+      borderRadius: {
+        'sm': '4px',
+        'DEFAULT': '8px',
+        'md': '12px',
+        'lg': '16px',
+        'xl': '20px',
+        '2xl': '24px',
+        'full': '9999px',
+      },
+      spacing: {
+        'gutter-xs': '4px',
+        'gutter-sm': '8px',
+        'gutter-md': '16px',
+        'gutter-lg': '24px',
+        'gutter-xl': '32px',
+        'gutter-2xl': '48px',
+        'section': '64px',
+        'section-lg': '96px',
+        'page-margin': '24px',
+      },
+      fontFamily: {
+        'display': ['"Plus Jakarta Sans"', 'sans-serif'],
+        'headline': ['"Plus Jakarta Sans"', 'sans-serif'],
+        'body': ['"Plus Jakarta Sans"', 'sans-serif'],
+        'label': ['"JetBrains Mono"', 'sans-serif'],
+      },
+      fontSize: {
+        'display-2xl': ['48px', { lineHeight: '56px', letterSpacing: '-0.8px', fontWeight: '500' }],
+        'display-2xl-mobile': ['32px', { lineHeight: '38px', letterSpacing: '-0.4px', fontWeight: '500' }],
+        'display-xl': ['36px', { lineHeight: '44px', letterSpacing: '-0.6px', fontWeight: '500' }],
+        'display-xl-mobile': ['26px', { lineHeight: '32px', letterSpacing: '-0.3px', fontWeight: '500' }],
+        'display-lg': ['28px', { lineHeight: '36px', letterSpacing: '-0.4px', fontWeight: '500' }],
+        'display-lg-mobile': ['22px', { lineHeight: '28px', letterSpacing: '-0.2px', fontWeight: '500' }],
+        'headline-lg': ['20px', { lineHeight: '28px', letterSpacing: '-0.2px', fontWeight: '500' }],
+        'headline-md': ['16px', { lineHeight: '24px', letterSpacing: '-0.1px', fontWeight: '500' }],
+        'body-lg': ['15px', { lineHeight: '22px', letterSpacing: '0px', fontWeight: '400' }],
+        'body-md': ['13px', { lineHeight: '18px', letterSpacing: '0.1px', fontWeight: '400' }],
+        'body-sm': ['12px', { lineHeight: '16px', letterSpacing: '0.2px', fontWeight: '400' }],
+        'label-lg': ['13px', { lineHeight: '18px', letterSpacing: '0.2px', fontWeight: '500' }],
+        'label-sm': ['11px', { lineHeight: '15px', letterSpacing: '0.5px', fontWeight: '400' }],
+      },
+      transitionDuration: {
+        'state-change': '150ms',
+        'surface-enter': '350ms',
+        'cinematic-reveal': '500ms',
+      },
+      transitionDelay: {
+        'state-change': '0ms',
+        'surface-enter': '0ms',
+        'cinematic-reveal': '100ms',
+      },
+      transitionTimingFunction: {
+        'state-change': 'cubic-bezier(0.16, 1, 0.3, 1)',
+        'surface-enter': 'cubic-bezier(0.16, 1, 0.3, 1)',
+        'cinematic-reveal': 'cubic-bezier(0.2, 0.8, 0.2, 1)',
+      },
+    },
+  },
+};
+if (typeof module !== 'undefined') module.exports = globalThis.tailwind.config;
+</script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    
+    html, body {
+      background-color: #000000;
+      color: #f2f2ef;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Glass pill styles precisely from vshslv */
+    .glass-pill {
+      background: rgba(22, 22, 22, 0.7);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .glass-pill:hover {
+      border-color: rgba(255, 255, 255, 0.28);
+      background: rgba(32, 32, 32, 0.85);
+    }
+
+    .glass-pill-active {
+      background: #f2f2ef !important;
+      color: #000000 !important;
+      border-color: #ffffff !important;
+      box-shadow: 0 2px 12px rgba(242, 242, 239, 0.3);
+    }
+
+    /* ASCII Canvas */
+    #hero-ascii {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* Modal Window Drawer styles matching vshslv.com .home-window */
+    .os-window {
+      background: rgba(12, 12, 12, 0.92);
+      backdrop-filter: blur(32px);
+      -webkit-backdrop-filter: blur(32px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.18);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.35);
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(0.8); }
+    }
+    .animate-pulse-dot {
+      animation: pulse-dot 2.2s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="relative w-full h-screen overflow-hidden bg-dark-surface text-dark-primary flex flex-col justify-between p-6 select-none">
+
+  <!-- Interactive Real-time 3D Torus ASCII Canvas mimicking vshslv.com -->
+  <canvas id="hero-ascii"></canvas>
+
+  <!-- TOP BAR: Pill Navigation & Status (vshslv.com replica) -->
+  <header class="relative z-20 w-full flex items-center justify-between pointer-events-auto">
+    <!-- Left 3-pill container -->
+    <div class="glass-pill flex items-center p-1 rounded-full space-x-1">
+      <button id="nav-btn-home" onclick="setTab(&#39;home&#39;)" class="px-4 py-1.5 rounded-full font-medium transition-all duration-200 glass-pill-active text-black text-body-md flex items-center gap-1.5">
+        <span>IncidentZero</span>
+      </button>
+      <button id="nav-btn-prs" onclick="setTab(&#39;prs&#39;)" class="px-4 py-1.5 rounded-full font-medium text-dark-primary/75 hover:text-white transition-all duration-200 text-body-md flex items-center gap-1.5">
+        <span>Autonomous PRs</span>
+        <span class="text-label-sm font-mono px-1.5 py-0.2 rounded-full bg-white/10 text-dark-primary/90">4</span>
+      </button>
+      <button id="nav-btn-spec" onclick="setTab(&#39;spec&#39;)" class="px-4 py-1.5 rounded-full font-medium text-dark-primary/75 hover:text-white transition-all duration-200 text-body-md flex items-center gap-1.5">
+        <span>Architecture &amp; Spec</span>
+      </button>
+    </div>
+
+    <!-- Right Live Status & Hotkey Help -->
+    <div class="flex items-center space-x-2">
+      <!-- Live Status Pill -->
+      <div class="glass-pill px-3.5 py-1.5 rounded-full flex items-center space-x-2.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-success animate-pulse-dot"></span>
+        <span class="text-body-sm text-dark-primary/90 font-mono">0 crashes unresolved</span>
+        <span class="text-body-sm text-dark-primary/60 font-mono">|</span>
+        <span class="text-body-sm text-accent font-mono font-medium">18.4s MTTR</span>
+      </div>
+
+      <!-- Hotkey Help Pill ('?' button) -->
+      <button onclick="toggleHelpModal()" class="glass-pill w-8 h-8 rounded-full flex items-center justify-center font-mono text-body-md text-dark-primary/90 hover:text-white hover:scale-105 active:scale-95 transition-all">
+        ?
+      </button>
+    </div>
+  </header>
+
+  <!-- LEFT SIDEBAR: W. equivalent & Vertical Text (vshslv.com replica) -->
+  <aside class="absolute left-6 top-1/2 -translate-y-1/2 z-20 flex flex-col items-center space-y-12 pointer-events-auto">
+    <!-- Brand Icon -->
+    <a href="#" class="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center font-mono font-semibold text-body-sm tracking-tighter hover:border-white transition-colors bg-black/60 backdrop-blur-md">
+      IZ.
+    </a>
+
+    <!-- Vertical Status Text -->
+    <div class="flex flex-col items-center space-y-8">
+      <span class="text-label-sm font-mono tracking-widest text-dark-primary/65 uppercase [writing-mode:vertical-rl] rotate-180">
+        SOC2 TYPE II VERIFIED
+      </span>
+      <div class="w-px h-8 bg-white/20"></div>
+      <span class="text-label-sm font-mono tracking-widest text-dark-primary/65 uppercase [writing-mode:vertical-rl] rotate-180">
+        99.999% KERNEL RELIABILITY
+      </span>
+    </div>
+  </aside>
+
+  <!-- HERO GRID: 4-Column Layout positioned in lower half (vshslv.com replica) -->
+  <main class="relative z-10 w-full max-w-[1200px] ml-16 mr-auto grid grid-cols-12 gap-8 my-auto pt-24 pb-6 pointer-events-auto">
+    
+    <!-- Col 1: Identity / Title & Lead (Cols 1-4) -->
+    <div class="col-span-12 md:col-span-4 flex flex-col justify-end space-y-3.5 pr-2">
+      <div class="inline-flex items-center gap-2 text-label-sm font-mono text-accent uppercase tracking-wider">
+        <span class="w-1.5 h-1.5 rounded-full bg-accent"></span>
+        Autonomous AI Engine
+      </div>
+      
+      <h1 class="text-display-xl font-medium tracking-tight text-dark-primary">
+        IncidentZero
+      </h1>
+
+      <p class="text-body-md text-dark-primary/75 max-w-sm">
+        Autonomous kernel and distributed runtime engine that monitors production failures, isolates call stack anomalies, and publishes verified, passing GitHub Pull Requests without human on-call delays.
+      </p>
+
+      <div class="pt-2 flex items-center gap-2.5">
+        <button onclick="setTab(&#39;prs&#39;)" class="px-4 py-2 rounded-full bg-dark-primary text-dark-on-primary text-body-sm font-medium hover:bg-white transition-all flex items-center gap-2">
+          <span>Active Remediation</span>
+          <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+        </button>
+        <button onclick="setTab(&#39;spec&#39;)" class="px-4 py-2 rounded-full glass-pill text-dark-primary/90 hover:text-white text-body-sm font-medium transition-all">
+          <span>Architecture</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Col 2: Core Loop / Focus (Cols 5-6) -->
+    <div class="col-span-12 md:col-span-2 flex flex-col justify-end space-y-2 border-l border-white/15 pl-5">
+      <span class="text-label-sm font-mono text-dark-primary/60 uppercase tracking-wider pb-1">01 / Loop</span>
+      <ul class="text-body-md space-y-1.5 text-dark-primary/85 font-normal">
+        <li class="hover:text-white transition-colors cursor-pointer flex items-center gap-1.5" onclick="setTab(&#39;prs&#39;)">
+          <span class="text-accent">›</span> eBPF Kernel Probe
+        </li>
+        <li class="hover:text-white transition-colors cursor-pointer flex items-center gap-1.5" onclick="setTab(&#39;prs&#39;)">
+          <span class="text-accent">›</span> Crash Dump Snapshot
+        </li>
+        <li class="hover:text-white transition-colors cursor-pointer flex items-center gap-1.5" onclick="setTab(&#39;prs&#39;)">
+          <span class="text-accent">›</span> AST Semantic Patch
+        </li>
+        <li class="hover:text-white transition-colors cursor-pointer flex items-center gap-1.5" onclick="setTab(&#39;prs&#39;)">
+          <span class="text-accent">›</span> Sandbox CI Regression
+        </li>
+        <li class="hover:text-white transition-colors cursor-pointer flex items-center gap-1.5" onclick="setTab(&#39;prs&#39;)">
+          <span class="text-accent">›</span> Verified GitHub PR
+        </li>
+      </ul>
+    </div>
+
+    <!-- Col 3: Engine Stack (Cols 7-8) -->
+    <div class="col-span-12 md:col-span-2 flex flex-col justify-end space-y-2 border-l border-white/15 pl-5">
+      <span class="text-label-sm font-mono text-dark-primary/60 uppercase tracking-wider pb-1">02 / Engine</span>
+      <ul class="text-body-md space-y-1.5 text-dark-primary/85 font-normal">
+        <li class="hover:text-white transition-colors">Rust Core Engine</li>
+        <li class="hover:text-white transition-colors">LLVM Bitcode Tracing</li>
+        <li class="hover:text-white transition-colors">Docker Ephemeral Jail</li>
+        <li class="hover:text-white transition-colors">Deterministic CI Matrix</li>
+        <li class="hover:text-white transition-colors">Zero-Leak Token Vault</li>
+      </ul>
+    </div>
+
+    <!-- Col 4: Integrations & Live Metric (Cols 9-12) -->
+    <div class="col-span-12 md:col-span-4 flex flex-col justify-end space-y-3.5 border-l border-white/15 pl-5">
+      <div class="flex items-center justify-between">
+        <span class="text-label-sm font-mono text-dark-primary/60 uppercase tracking-wider">03 / Ecosystem</span>
+        <span class="text-label-sm font-mono text-success flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-success"></span> 6 Active Hooks
+        </span>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 text-body-sm text-dark-primary/85">
+        <div class="p-2 rounded-lg bg-white/[0.04] border border-white/10 flex items-center justify-between">
+          <span>GitHub Enterprise</span>
+          <i data-lucide="check" class="w-3.5 h-3.5 text-success"></i>
+        </div>
+        <div class="p-2 rounded-lg bg-white/[0.04] border border-white/10 flex items-center justify-between">
+          <span>Kubernetes EKS</span>
+          <i data-lucide="check" class="w-3.5 h-3.5 text-success"></i>
+        </div>
+        <div class="p-2 rounded-lg bg-white/[0.04] border border-white/10 flex items-center justify-between">
+          <span>Datadog APM</span>
+          <i data-lucide="check" class="w-3.5 h-3.5 text-success"></i>
+        </div>
+        <div class="p-2 rounded-lg bg-white/[0.04] border border-white/10 flex items-center justify-between">
+          <span>PagerDuty V3</span>
+          <i data-lucide="check" class="w-3.5 h-3.5 text-success"></i>
+        </div>
+      </div>
+
+      <!-- Live Speed Metric Card -->
+      <div class="glass-pill p-3 rounded-xl flex items-center justify-between mt-1">
+        <div>
+          <div class="text-label-sm font-mono text-dark-primary/65">AVERAGE CRASH-TO-PR VELOCITY</div>
+          <div class="text-headline-md font-mono font-medium text-dark-primary">18.4 <span class="text-body-sm text-dark-primary/65 font-body">seconds</span></div>
+        </div>
+        <div class="text-right">
+          <div class="text-label-sm font-mono text-success">100% PASSING</div>
+          <div class="text-label-sm text-dark-primary/60 font-mono">CI test suites</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- BOTTOM BAR: Index & Telemetry (vshslv.com replica) -->
+  <footer class="relative z-20 w-full flex items-center justify-between text-label-sm font-mono text-dark-primary/65 pointer-events-auto">
+    <div class="flex items-center space-x-3">
+      <span class="text-dark-primary font-semibold">1</span>
+      <span class="text-dark-primary/40">/</span>
+      <span>AUTONOMOUS ENGINE STATUS</span>
+    </div>
+
+    <div class="hidden sm:flex items-center space-x-2 text-dark-primary/55">
+      <span>MOVE CURSOR TO DISTORT 3D TORUS ASCII</span>
+      <span>•</span>
+      <span>PRESS <kbd class="px-1.5 py-0.5 rounded bg-white/15 text-white font-mono text-[10px]">1</kbd> <kbd class="px-1.5 py-0.5 rounded bg-white/15 text-white font-mono text-[10px]">2</kbd> <kbd class="px-1.5 py-0.5 rounded bg-white/15 text-white font-mono text-[10px]">3</kbd> TO NAVIGATE</span>
+    </div>
+
+    <div class="flex items-center space-x-3">
+      <span>LATENCY: 4.2ms</span>
+      <span class="text-dark-primary/40">/</span>
+      <span class="text-dark-primary font-semibold">1</span>
+    </div>
+  </footer>
+
+  <!-- ============================================================== -->
+  <!-- MODAL WINDOW DRAWER (Exact equivalent of vshslv.com .home-window) -->
+  <!-- ============================================================== -->
+  <div id="os-window" class="fixed inset-x-6 top-20 bottom-12 z-30 os-window rounded-2xl p-6 hidden flex-col overflow-hidden pointer-events-auto transition-all duration-300">
+    
+    <!-- Window Header Bar -->
+    <div class="flex items-center justify-between pb-4 border-b border-white/10">
+      <div class="flex items-center space-x-3">
+        <span id="window-title" class="font-medium text-body-lg text-dark-primary">Active Remediations &amp; Synthesized PRs</span>
+        <span class="text-label-sm font-mono px-2 py-0.5 rounded-full bg-white/10 text-dark-primary/80">Verified by Sandbox CI</span>
+      </div>
+      <div class="flex items-center space-x-3">
+        <button onclick="closeWindow()" class="glass-pill px-3 py-1.5 rounded-full text-label-sm font-mono text-dark-primary/90 hover:text-white flex items-center space-x-1.5 hover:bg-white/15 transition-colors">
+          <span>Esc</span>
+          <i data-lucide="x" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Tab 1: Autonomous PRs & Case Studies -->
+    <div id="content-prs" class="flex-1 overflow-y-auto pt-6 space-y-6">
+      
+      <!-- Incident #1: Buffer Overflow Remediation in Rust microservice -->
+      <div class="glass-pill p-5 rounded-xl border border-white/10">
+        <div class="flex items-start justify-between">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded-full text-label-sm font-mono bg-error/20 text-error border border-error/30">CRITICAL KERNEL PANIC</span>
+              <span class="text-label-sm font-mono text-dark-primary/60">#INC-8891</span>
+              <span class="text-label-sm font-mono text-success">Remediated in 14.2s</span>
+            </div>
+            <h3 class="text-headline-md font-medium text-dark-primary pt-1">SIGSEGV null-pointer dereference in gateway route dispatcher</h3>
+            <p class="text-body-sm text-dark-primary/70">Triggered by corrupted HTTP/2 multiplex frame during upstream failover in cluster `us-east-1`.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-1 rounded-full text-label-sm font-mono bg-success/15 text-success border border-success/30 flex items-center gap-1">
+              <i data-lucide="git-pull-request" class="w-3.5 h-3.5"></i> PR #1402 Merged
+            </span>
+          </div>
+        </div>
+
+        <!-- Git Diff Viewer in JetBrains Mono -->
+        <div class="mt-4 rounded-lg bg-black/90 border border-white/10 p-3 font-mono text-label-sm overflow-x-auto">
+          <div class="text-dark-primary/50 pb-1 flex justify-between border-b border-white/5">
+            <span>crates/gateway/src/dispatcher.rs</span>
+            <span class="text-success">+5 -2 lines</span>
+          </div>
+          <div class="pt-2 space-y-0.5">
+            <div class="text-red-400 bg-red-950/20 px-1 rounded">- let session = self.sessions.get(&amp;stream_id).unwrap();</div>
+            <div class="text-green-400 bg-green-950/20 px-1 rounded">+ let session = match self.sessions.get(&amp;stream_id) {</div>
+            <div class="text-green-400 bg-green-950/20 px-1 rounded">+     Some(s) =&gt; s,</div>
+            <div class="text-green-400 bg-green-950/20 px-1 rounded">+     None =&gt; return Err(GatewayError::OrphanedStream(stream_id)),</div>
+            <div class="text-green-400 bg-green-950/20 px-1 rounded">+ };</div>
+          </div>
+        </div>
+
+        <div class="mt-3 flex items-center justify-between text-label-sm font-mono text-dark-primary/60">
+          <span>Sandbox CI: 148 Unit Tests, 32 Fuzz Vectors passed without regression</span>
+          <span class="text-dark-primary/80 hover:text-white cursor-pointer underline flex items-center gap-1">
+            View on GitHub <i data-lucide="external-link" class="w-3 h-3"></i>
+          </span>
+        </div>
+      </div>
+
+      <!-- Incident #2: Goroutine leak in Kubernetes ingress controller -->
+      <div class="glass-pill p-5 rounded-xl border border-white/10">
+        <div class="flex items-start justify-between">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded-full text-label-sm font-mono bg-warning/20 text-warning border border-warning/30">HIGH MEMORY EXHAUSTION</span>
+              <span class="text-label-sm font-mono text-dark-primary/60">#INC-8890</span>
+              <span class="text-label-sm font-mono text-success">Remediated in 19.8s</span>
+            </div>
+            <h3 class="text-headline-md font-medium text-dark-primary pt-1">OOMKilled pod: Unbounded channel buffer in telemetry watcher</h3>
+            <p class="text-body-sm text-dark-primary/70">Memory escalated to 16GB due to unconsumed backpressure channel under high metric burst.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-1 rounded-full text-label-sm font-mono bg-success/15 text-success border border-success/30 flex items-center gap-1">
+              <i data-lucide="git-pull-request" class="w-3.5 h-3.5"></i> PR #1398 Merged
+            </span>
+          </div>
+        </div>
+
+        <div class="mt-4 rounded-lg bg-black/90 border border-white/10 p-3 font-mono text-label-sm overflow-x-auto">
+          <div class="text-dark-primary/50 pb-1 flex justify-between border-b border-white/5">
+            <span>pkg/ingress/watcher.go</span>
+            <span class="text-success">+7 -3 lines</span>
+          </div>
+          <div class="pt-2 space-y-0.5">
+            <div class="text-red-400 bg-red-950/20 px-1 rounded">- ch := make(chan Event)</div>
+            <div class="text-green-400 bg-green-950/20 px-1 rounded">+ ch := make(chan Event, MaxQueueCapacity)</div>
+            <div class="text-green-400 bg-green-950/20 px-1 rounded">+ select {</div>
+            <div class="text-green-400 bg-green-950/20 px-1 rounded">+ case ch &lt;- event:</div>
+            <div class="text-green-400 bg-green-950/20 px-1 rounded">+ default:</div>
+            <div class="text-green-400 bg-green-950/20 px-1 rounded">+     metrics.DroppedEventsTotal.Inc()</div>
+            <div class="text-green-400 bg-green-950/20 px-1 rounded">+ }</div>
+          </div>
+        </div>
+
+        <div class="mt-3 flex items-center justify-between text-label-sm font-mono text-dark-primary/60">
+          <span>Memory curve normalized from 15.8GB to 420MB post-deployment</span>
+          <span class="text-dark-primary/80 hover:text-white cursor-pointer underline flex items-center gap-1">
+            View on GitHub <i data-lucide="external-link" class="w-3 h-3"></i>
+          </span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Tab 2: Architecture & Specification -->
+    <div id="content-spec" class="flex-1 overflow-y-auto pt-6 space-y-6 hidden">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        
+        <div class="glass-pill p-5 rounded-xl border border-white/10 space-y-3">
+          <div class="w-8 h-8 rounded-lg bg-accent/15 border border-accent/30 flex items-center justify-center text-accent">
+            <i data-lucide="cpu" class="w-4 h-4"></i>
+          </div>
+          <h4 class="font-medium text-body-lg text-dark-primary">1. Kernel eBPF Telemetry</h4>
+          <p class="text-body-sm text-dark-primary/70 leading-relaxed">
+            Non-invasive probes hook into the Linux kernel and container cgroups. When SIGSEGV, SIGABRT, unhandled exceptions, or OOM events occur, an instantaneous core dump &amp; AST stack frame are captured in sub-millisecond time.
+          </p>
+          <div class="text-label-sm font-mono text-dark-primary/50 pt-2 border-t border-white/5">0.12% CPU OVERHEAD</div>
+        </div>
+
+        <div class="glass-pill p-5 rounded-xl border border-white/10 space-y-3">
+          <div class="w-8 h-8 rounded-lg bg-accent/15 border border-accent/30 flex items-center justify-center text-accent">
+            <i data-lucide="git-merge" class="w-4 h-4"></i>
+          </div>
+          <h4 class="font-medium text-body-lg text-dark-primary">2. Deterministic AST Patching</h4>
+          <p class="text-body-sm text-dark-primary/70 leading-relaxed">
+            IncidentZero constructs a semantic dependency graph of your codebase from GitHub. It isolates the exact faulty function node, hypothesizes bug mutations, and synthesizes minimal, zero-side-effect patch diffs.
+          </p>
+          <div class="text-label-sm font-mono text-dark-primary/50 pt-2 border-t border-white/5">FORMAL VERIFICATION ENGINE</div>
+        </div>
+
+        <div class="glass-pill p-5 rounded-xl border border-white/10 space-y-3">
+          <div class="w-8 h-8 rounded-lg bg-success/15 border border-success/30 flex items-center justify-center text-success">
+            <i data-lucide="shield-check" class="w-4 h-4"></i>
+          </div>
+          <h4 class="font-medium text-body-lg text-dark-primary">3. Ephemeral Sandbox Verification</h4>
+          <p class="text-body-sm text-dark-primary/70 leading-relaxed">
+            Before creating any Pull Request, IncidentZero spins up an isolated Docker microVM, replays the exact payload that caused the crash, verifies the patch solves it, and executes existing test suites.
+          </p>
+          <div class="text-label-sm font-mono text-success pt-2 border-t border-white/5">0 FALSE POSITIVES GUARANTEE</div>
+        </div>
+
+      </div>
+
+      <!-- System Telemetry Table -->
+      <div class="glass-pill p-5 rounded-xl border border-white/10">
+        <h4 class="font-mono text-label-sm text-dark-primary/60 uppercase tracking-wider pb-3">Continuous Enterprise Specifications</h4>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-label-sm font-mono">
+          <div>
+            <span class="text-dark-primary/50 block">SUPPORTED RUNTIMES</span>
+            <span class="text-dark-primary font-medium">Rust, Go, Node.js, Python, JVM, C++</span>
+          </div>
+          <div>
+            <span class="text-dark-primary/50 block">AVERAGE TIME TO PR</span>
+            <span class="text-accent font-medium">18.4 seconds</span>
+          </div>
+          <div>
+            <span class="text-dark-primary/50 block">GIT PROVIDERS</span>
+            <span class="text-dark-primary font-medium">GitHub Enterprise, GitLab, Bitbucket</span>
+          </div>
+          <div>
+            <span class="text-dark-primary/50 block">COMPLIANCE</span>
+            <span class="text-success font-medium">SOC2 Type II, HIPAA, ISO 27001</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- KEYBOARD HELP MODAL ('?' key) -->
+  <div id="help-modal" class="fixed inset-0 z-40 bg-black/60 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="glass-pill p-6 rounded-2xl max-w-sm w-full border border-white/15 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="font-medium text-body-md text-dark-primary">Keyboard Navigation</h3>
+        <button onclick="toggleHelpModal()" class="text-dark-primary/70 hover:text-white text-label-sm font-mono">Esc</button>
+      </div>
+      <div class="space-y-2 text-label-sm font-mono">
+        <div class="flex items-center justify-between py-1 border-b border-white/5">
+          <span class="text-dark-primary/70">Overview</span>
+          <kbd class="px-2 py-0.5 rounded bg-white/15 text-white">1</kbd>
+        </div>
+        <div class="flex items-center justify-between py-1 border-b border-white/5">
+          <span class="text-dark-primary/70">Autonomous PRs Drawer</span>
+          <kbd class="px-2 py-0.5 rounded bg-white/15 text-white">2</kbd>
+        </div>
+        <div class="flex items-center justify-between py-1 border-b border-white/5">
+          <span class="text-dark-primary/70">Architecture &amp; Spec Drawer</span>
+          <kbd class="px-2 py-0.5 rounded bg-white/15 text-white">3</kbd>
+        </div>
+        <div class="flex items-center justify-between py-1 border-b border-white/5">
+          <span class="text-dark-primary/70">Close Drawer</span>
+          <kbd class="px-2 py-0.5 rounded bg-white/15 text-white">Esc</kbd>
+        </div>
+        <div class="flex items-center justify-between py-1">
+          <span class="text-dark-primary/70">Toggle Hotkeys</span>
+          <kbd class="px-2 py-0.5 rounded bg-white/15 text-white">?</kbd>
+        </div>
+      </div>
+      <div class="pt-2 text-label-sm text-dark-primary/50 text-center">
+        Move your mouse over the background to bend and heat the 3D ASCII structure.
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Logic & 3D ASCII Torus Engine (exact vshslv.com aesthetic) -->
+  <script>
+    lucide.createIcons();
+
+    // ==========================================
+    // Real-Time 3D Rotating ASCII Torus / Mesh (vshslv clone)
+    // ==========================================
+    const canvas = document.getElementById('hero-ascii');
+    const ctx = canvas.getContext('2d');
+
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    window.addEventListener('resize', () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+      initBuffers();
+    });
+
+    const chars = ".,-~:;=!*#$@";
+    let A = 0.5, B = 0.5;
+    let mouse = { x: width * 0.65, y: height * 0.45, active: false };
+
+    window.addEventListener('mousemove', (e) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+      mouse.active = true;
+    });
+
+    let bufferCols = Math.floor(width / 13);
+    let bufferRows = Math.floor(height / 19);
+    let b = [];
+    let z = [];
+    let colors = [];
+
+    function initBuffers() {
+      bufferCols = Math.floor(width / 13);
+      bufferRows = Math.floor(height / 19);
+      b = new Array(bufferCols * bufferRows);
+      z = new Array(bufferCols * bufferRows);
+      colors = new Array(bufferCols * bufferRows);
+    }
+    initBuffers();
+
+    function renderTorus() {
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(0, 0, width, height);
+
+      // Clear z-buffer and char-buffer
+      for (let i = 0; i < bufferCols * bufferRows; i++) {
+        b[i] = ' ';
+        z[i] = 0;
+        colors[i] = 0;
+      }
+
+      // Torus geometry parameters: shifted slightly right to match vshslv.com
+      const centerX = Math.floor(bufferCols * 0.62);
+      const centerY = Math.floor(bufferRows * 0.48);
+      const R1 = 1.1; // tube radius
+      const R2 = 2.4; // donut radius
+      const K2 = 5;
+      const K1 = bufferCols * K2 * 2.8 / (8 * (R1 + R2));
+
+      // Gentle interactive mouse influence on rotation
+      const targetA = (mouse.y - height / 2) * 0.002;
+      const targetB = (mouse.x - width / 2) * 0.002;
+      A += (targetA - A) * 0.05 + 0.015;
+      B += (targetB - B) * 0.05 + 0.02;
+
+      const cosA = Math.cos(A), sinA = Math.sin(A);
+      const cosB = Math.cos(B), sinB = Math.sin(B);
+
+      // Sweep theta and phi
+      for (let theta = 0; theta < 6.28; theta += 0.07) {
+        const costheta = Math.cos(theta), sintheta = Math.sin(theta);
+
+        for (let phi = 0; phi < 6.28; phi += 0.02) {
+          const cosphi = Math.cos(phi), sinphi = Math.sin(phi);
+
+          const circlex = R2 + R1 * costheta;
+          const circley = R1 * sintheta;
+
+          const x = circlex * (cosB * cosphi + sinA * sinB * sinphi) - circley * cosA * sinB;
+          const y = circlex * (sinB * cosphi - sinA * cosB * sinphi) + circley * cosA * cosB;
+          const cz = K2 + cosA * circlex * sinphi + circley * sinA;
+          const ooz = 1 / cz;
+
+          const xp = Math.floor(centerX + K1 * ooz * x * 1.8);
+          const yp = Math.floor(centerY - K1 * ooz * y);
+
+          // Normal luminance
+          const L = cosphi * costheta * sinB - cosA * costheta * sinphi - sinA * sintheta + cosB * (cosA * sintheta - costheta * sinA * sinphi);
+
+          if (L > 0) {
+            if (xp >= 0 && xp < bufferCols && yp >= 0 && yp < bufferRows) {
+              const idx = xp + yp * bufferCols;
+              if (ooz > z[idx]) {
+                z[idx] = ooz;
+                const charIdx = Math.floor(L * 8);
+                b[idx] = chars[Math.min(chars.length - 1, Math.max(0, charIdx))];
+                colors[idx] = L;
+              }
+            }
+          }
+        }
+      }
+
+      // Draw ASCII Characters
+      ctx.font = '13px "JetBrains Mono", monospace';
+      ctx.textBaseline = 'top';
+
+      for (let r = 0; r < bufferRows; r++) {
+        for (let c = 0; c < bufferCols; c++) {
+          const idx = c + r * bufferCols;
+          const ch = b[idx];
+          if (ch && ch !== ' ') {
+            const posX = c * 13;
+            const posY = r * 19;
+            const lum = colors[idx];
+
+            // Distance to mouse for heat flare
+            const dx = mouse.x - posX;
+            const dy = mouse.y - posY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist < 190) {
+              const heat = (1 - dist / 190);
+              ctx.fillStyle = `rgba(255, 85, 0, ${0.45 + heat * 0.55})`;
+            } else if (lum > 0.8) {
+              ctx.fillStyle = 'rgba(255, 120, 40, 0.85)';
+            } else if (lum > 0.5) {
+              ctx.fillStyle = 'rgba(242, 242, 239, 0.7)';
+            } else {
+              ctx.fillStyle = 'rgba(242, 242, 239, 0.28)';
+            }
+
+            ctx.fillText(ch, posX, posY);
+          }
+        }
+      }
+
+      requestAnimationFrame(renderTorus);
+    }
+    renderTorus();
+
+    // ==========================================
+    // UI Navigation & Modal Drawer State
+    // ==========================================
+    let currentTab = 'home';
+    const osWindow = document.getElementById('os-window');
+    const contentPrs = document.getElementById('content-prs');
+    const contentSpec = document.getElementById('content-spec');
+    const windowTitle = document.getElementById('window-title');
+
+    const navBtnHome = document.getElementById('nav-btn-home');
+    const navBtnPrs = document.getElementById('nav-btn-prs');
+    const navBtnSpec = document.getElementById('nav-btn-spec');
+
+    function resetNavButtons() {
+      [navBtnHome, navBtnPrs, navBtnSpec].forEach(btn => {
+        btn.className = "px-4 py-1.5 rounded-full font-medium text-dark-primary/75 hover:text-white transition-all duration-200 text-body-md flex items-center gap-1.5";
+      });
+    }
+
+    function setTab(tab) {
+      currentTab = tab;
+      resetNavButtons();
+
+      if (tab === 'home') {
+        navBtnHome.className = "px-4 py-1.5 rounded-full font-medium transition-all duration-200 glass-pill-active text-black text-body-md flex items-center gap-1.5";
+        closeWindow();
+      } else if (tab === 'prs') {
+        navBtnPrs.className = "px-4 py-1.5 rounded-full font-medium transition-all duration-200 glass-pill-active text-black text-body-md flex items-center gap-1.5";
+        windowTitle.innerText = "Active Remediations & Synthesized PRs";
+        contentPrs.classList.remove('hidden');
+        contentSpec.classList.add('hidden');
+        openWindow();
+      } else if (tab === 'spec') {
+        navBtnSpec.className = "px-4 py-1.5 rounded-full font-medium transition-all duration-200 glass-pill-active text-black text-body-md flex items-center gap-1.5";
+        windowTitle.innerText = "Deterministic Architecture & Formal Specification";
+        contentPrs.classList.add('hidden');
+        contentSpec.classList.remove('hidden');
+        openWindow();
+      }
+    }
+
+    function openWindow() {
+      osWindow.classList.remove('hidden');
+      osWindow.classList.add('flex');
+    }
+
+    function closeWindow() {
+      osWindow.classList.add('hidden');
+      osWindow.classList.remove('flex');
+      if (currentTab !== 'home') {
+        currentTab = 'home';
+        resetNavButtons();
+        navBtnHome.className = "px-4 py-1.5 rounded-full font-medium transition-all duration-200 glass-pill-active text-black text-body-md flex items-center gap-1.5";
+      }
+    }
+
+    const helpModal = document.getElementById('help-modal');
+    function toggleHelpModal() {
+      if (helpModal.classList.contains('hidden')) {
+        helpModal.classList.remove('hidden');
+        helpModal.classList.add('flex');
+      } else {
+        helpModal.classList.add('hidden');
+        helpModal.classList.remove('flex');
+      }
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === '1') setTab('home');
+      else if (e.key === '2') setTab('prs');
+      else if (e.key === '3') setTab('spec');
+      else if (e.key === 'Escape') {
+        closeWindow();
+        helpModal.classList.add('hidden');
+        helpModal.classList.remove('flex');
+      } else if (e.key === '?') {
+        toggleHelpModal();
+      }
+    });
+  </script>
+
+
+</body></html>
